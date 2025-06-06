@@ -23,12 +23,15 @@ with tab1:
 
     else:
         url = st.text_input("Введите URL изображения:")
-        if url:
-            try:
-                response = requests.get(url)
-                img_pil = Image.open(BytesIO(response.content)).convert('RGB')
-            except Exception as e:
-                st.error(f"Ошибка загрузки изображения: {e}")
+        if st.button("Обработать изображение"):
+            if url:
+                try:
+                    response = requests.get(url)
+                    img_pil = Image.open(BytesIO(response.content)).convert('RGB')
+                except Exception as e:
+                    st.error(f"Ошибка загрузки изображения: {e}")
+            else:
+                st.warning("Пожалуйста, введите URL изображения.")
 
     if img_pil:
         original_size = img_pil.size
@@ -48,8 +51,7 @@ with tab1:
 
         overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(255, 0, 0))
         st.image(overlay, caption="Изображение с наложенной маской", use_container_width=True)
-    else:
-        st.info("Пожалуйста, загрузите изображение или введите URL.")
+
 
 with tab2:
     st.subheader("U-Net модель сегментации растительности")
