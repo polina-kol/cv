@@ -32,6 +32,10 @@ with tab1:
     if img_pil:
         st.image(img_pil, caption="Оригинал", use_container_width=True)
         input_tensor = preprocess(img_pil)
+        st.write("Текущая рабочая директория:", os.getcwd())
+        st.write("Содержимое директории:", os.listdir())
+        st.write("Содержимое models/:", os.listdir("models") if os.path.exists("models") else "❌ models/ не найдена")
+
         model = load_model()
 
         with st.spinner("Обработка..."):
