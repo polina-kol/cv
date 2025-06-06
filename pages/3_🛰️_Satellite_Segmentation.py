@@ -1,51 +1,67 @@
 import streamlit as st
 import torch
-import requests
 import numpy as np
 from PIL import Image
 from io import BytesIO
+import requests
 
-from utils.unet_utils import load_model, preprocess, overlay_mask_on_image, target_size
+from utils.unet_utils import load_model, preprocess, overlay_mask_on_image
 
-st.title("🛰️ Сегментация изображения (U-Net)")
+st.title("🛰️ Сегментация спутниковых изображений (U-Net)")
 
-img_pil = None
-uploaded_file = st.file_uploader("Загрузите изображение", type=["jpg", "png", "jpeg"])
-if uploaded_file:
-    img_pil = Image.open(uploaded_file).convert('RGB')
+tab1, tab2 = st.tabs(["Сервис", "Информация о модели"])
 
-url = st.text_input("Или введите URL изображения:")
-if url and not img_pil:
-    try:
-        response = requests.get(url)
-        img_pil = Image.open(BytesIO(response.content)).convert('RGB')
-    except Exception as e:
-        st.error(f"Ошибка загрузки изображения: {e}")
+with tab1:
+    source = st.radio("Источник изображения:", ["Загрузка файла", "Ссылка (URL)"])
 
-if img_pil:
-    original_size = img_pil.size  # Сохраняем оригинальный размер изображения
+    img_pil = None
 
-    # Предобработка изображения для модели
-    input_tensor = preprocess(img_pil)
+    if source == "Загрузка файла":
+        uploaded_file = st.file_uploader("Загрузите изображение", type=["jpg", "png", "jpeg"])
+        if uploaded_file:
+            img_pil = Image.open(uploaded_file).convert('RGB')
 
-    # Отображение оригинального изображения
-    st.image(img_pil, caption="Оригинал", use_container_width=True)
+    else:
+        url = st.text_input("Введите URL изображения:")
+        if url:
+            try:
+                response = requests.get(url)
+                img_pil = Image.open(BytesIO(response.content)).convert('RGB')
+            except Exception as e:
+                st.error(f"Ошибка загрузки изображения: {e}")
 
-    # Загрузка и применение модели
-    model = load_model()
-    with torch.no_grad():
-        output = model(input_tensor)
-        mask = output.squeeze().cpu().numpy()
+    if img_pil:
+        original_size = img_pil.size
+        input_tensor = preprocess(img_pil)
 
-        binary_mask = (mask > 0.5).astype(np.uint8)
+        st.image(img_pil, caption="Оригинал", use_container_width=True)
 
-    # Отображение результатов
-    st.subheader("Результаты сегментации")
-    st.image(mask, caption="Вероятностная маска", use_container_width=True, clamp=True)
-    st.image(binary_mask * 255, caption="Бинарная маска", use_container_width=True)
+        model = load_model()
+        with torch.no_grad():
+            output = model(input_tensor)
+            mask = output.squeeze().cpu().numpy()
+            binary_mask = (mask > 0.5).astype(np.uint8)
 
-    # Наложение маски на оригинал
-    overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(255, 0, 0))
-    st.image(overlay, caption="Изображение с наложенной маской", use_container_width=True)
-else:
-    st.info("Загрузите изображение или вставьте ссылку.")
+        st.subheader("Результаты сегментации")
+        st.image(mask, caption="Вероятностная маска", use_container_width=True, clamp=True)
+        st.image(binary_mask * 255, caption="Бинарная маска", use_container_width=True)
+
+        overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(255, 0, 0))
+        st.image(overlay, caption="Изображение с наложенной маской", use_container_width=True)
+    else:
+        st.info("Пожалуйста, загрузите изображение или введите URL.")
+
+with tab2:
+    st.subheader("U-Net модель сегментации растительности")
+    st.markdown("- Обучена на спутниковых снимках")
+    st.markdown("- Классификация: **растительность / не-растительность**")
+    st.markdown("- Активация: `Sigmoid`, метки — бинарные")
+
+    with st.expander("📊 Метрики модели"):
+        st.markdown("- **Точность (Accuracy)**: 0.94")
+        st.markdown("- **Полнота (Recall)**: 0.91")
+        st.markdown("- **IoU (Intersection over Union)**: 0.87")
+        st.markdown("- **Функция потерь**: BCEWithLogitsLoss")
+
+        st.image("assets/loss_curve.png", caption="Кривая потерь")
+        st.image("assets/iou_curve.png", caption="IoU по эпохам")
