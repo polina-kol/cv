@@ -53,15 +53,9 @@ with tab1:
 
 with tab2:
     st.subheader("U-Net модель сегментации растительности")
-    st.markdown("- Обучена на спутниковых снимках")
+    st.markdown("- Обучалсь 45 эпох, веса взяты с 28 эпохи")
     st.markdown("- Классификация: **растительность / не-растительность**")
     st.markdown("- Активация: `Sigmoid`, метки — бинарные")
-
-    with st.expander("📊 Метрики модели"):
-        st.markdown("- **Точность (Accuracy)**: 0.94")
-        st.markdown("- **Полнота (Recall)**: 0.91")
-        st.markdown("- **IoU (Intersection over Union)**: 0.87")
-        st.markdown("- **Функция потерь**: BCEWithLogitsLoss")
-
-        st.image("assets/loss_curve.png", caption="Кривая потерь")
-        st.image("assets/iou_curve.png", caption="IoU по эпохам")
+    st.image("assets/Unet_metr_Acc.png", caption="Accuracy")
+    st.image("assets/Unet_metr_los.png", caption="Кривая потерь")
+    st.image("assets/Unet_metr_IoU.png", caption="IoU по эпохам")
