@@ -4,10 +4,14 @@ import requests
 from io import BytesIO
 import torch
 import numpy as np
+import sys
 from torchvision import transforms
+# Добавляем корень проекта в Python path
+sys.path.append(os.path.abspath("../"))
 
-# Импортируем модель
+# Теперь можно импортировать модели
 from models.unet_forest import UNet
+
 
 # Настройки
 target_size = (256, 256)
