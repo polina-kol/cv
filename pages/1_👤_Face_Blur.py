@@ -58,7 +58,7 @@ with tab1:
 
 with tab2:
     st.header("YOLO face detector + OpenCV Blur")
-    st.image("assets/pr_curve_face.jpf", caption="PR-кривая")
+    st.image("assets/pr_curve_face.jpg", caption="PR-кривая")
     st.image("assets/conf_face.png", caption="Confusion matrix")
     st.image("assets/pr_face.png", caption="PR-curve")
     st.image("assets/loss_metrics_face.png", caption="Losses and metrics")
