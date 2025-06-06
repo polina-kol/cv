@@ -5,19 +5,19 @@ import torch
 from io import BytesIO
 from utils.unet_utils import load_model, preprocess, postprocess_mask, overlay_mask_on_image
 
-# Настройки
+# Конфиг
 st.set_page_config(page_title="Сегментация спутниковых снимков", page_icon="🛰️")
 st.title("🛰️ Сегментация спутниковых снимков (U-Net)")
 
 tab1, tab2 = st.tabs(["Сервис", "Информация о модели"])
 
 with tab1:
-    st.subheader("Выберите способ загрузки изображения")
-    source = st.radio("Источник изображения:", ["Загрузить файл", "Указать URL"])
+    st.subheader("Загрузка изображения")
+    source = st.radio("Источник:", ["Файл", "URL"])
 
     img_pil = None
-    if source == "Загрузить файл":
-        uploaded_file = st.file_uploader("Загрузите изображение", type=["jpg", "png", "jpeg"])
+    if source == "Файл":
+        uploaded_file = st.file_uploader("Выберите изображение", type=["jpg", "jpeg", "png"])
         if uploaded_file:
             img_pil = Image.open(uploaded_file).convert("RGB")
     else:
@@ -27,7 +27,7 @@ with tab1:
                 response = requests.get(url)
                 img_pil = Image.open(BytesIO(response.content)).convert("RGB")
             except Exception as e:
-                st.error(f"Ошибка при загрузке изображения: {e}")
+                st.error(f"Ошибка загрузки: {e}")
 
     if img_pil:
         st.image(img_pil, caption="Оригинал", use_container_width=True)
@@ -39,33 +39,28 @@ with tab1:
                 output = model(input_tensor)
                 binary_mask, binary_mask_img = postprocess_mask(output, img_pil.size)
 
-            # Показываем маски
-            st.subheader("Результаты сегментации")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(binary_mask_img, caption="Бинарная маска", use_column_width=True)
-            with col2:
-                overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(0, 255, 0))
-                st.image(overlay, caption="Изображение с наложенной маской", use_column_width=True)
+        st.subheader("Результаты")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.image(binary_mask_img, caption="Бинарная маска", use_column_width=True)
+        with col2:
+            overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4)
+            st.image(overlay, caption="Маска на изображении", use_column_width=True)
 
-            # Кнопка загрузки
-            buf = BytesIO()
-            binary_mask_img.save(buf, format="PNG")
-            st.download_button(
-                label="📥 Скачать маску",
-                data=buf.getvalue(),
-                file_name="mask.png",
-                mime="image/png"
-            )
+        buf = BytesIO()
+        binary_mask_img.save(buf, format="PNG")
+        st.download_button("📥 Скачать маску", data=buf.getvalue(), file_name="mask.png", mime="image/png")
+
     else:
-        st.info("Загрузите изображение или вставьте URL.")
+        st.info("Пожалуйста, загрузите изображение или введите URL.")
 
 with tab2:
-    st.header("Информация о модели")
     st.markdown("""
-    - **Архитектура**: U-Net (кастомная)
-    - **Тип**: Бинарная сегментация (например, лес / не лес)
-    - **Входной размер**: 256×256
-    - **Язык**: PyTorch
+    ### Модель
+    - Архитектура: U-Net
+    - Тип сегментации: бинарная
+    - Размер входа: 256×256
+    - Фреймворк: PyTorch
+
+    ![PR графики](assets/map_stats_unet.png)
     """)
-    st.image("assets/map_stats_unet.png", caption="PR / IoU / F1-графики")
