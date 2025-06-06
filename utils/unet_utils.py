@@ -2,10 +2,18 @@ import torch
 import torchvision.transforms as T
 import numpy as np
 from PIL import Image
-
+import os
 from models.unet_forest import UNet  # Импортируем твою модель, если она в другом файле
 
-def load_model(path="../models/unet_forest.pth"):
+def load_model(path=None):
+    if path is None:
+        # Определить абсолютный путь до файла весов, независимо от рабочей директории
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(current_dir, "..", "models", "unet_forest.pth")
+
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Файл весов не найден по пути: {path}")
+    
     model = UNet(n_class=1)
     model.load_state_dict(torch.load(path, map_location="cpu"))
     model.eval()
