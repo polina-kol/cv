@@ -9,7 +9,7 @@ from models.unet_forest import UNet
 target_size = (256, 256)
 
 def preprocess(img_pil, target_size=(256, 256)):
-    img_pil = img_pil.convert("RGB")  # ← ОБЯЗАТЕЛЬНО
+    img_pil = img_pil.convert("RGB") 
     transform = transforms.Compose([
         transforms.Resize(target_size),
         transforms.ToTensor(),

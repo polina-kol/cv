@@ -35,7 +35,9 @@ if img_pil:
     model = load_model()
     with torch.no_grad():
         output = model(input_tensor)
-        mask = torch.sigmoid(output).squeeze().cpu().numpy()
+        mask = output.squeeze().cpu().numpy()
+        st.write("🔍 Output stats — min:", float(mask.min()), "max:", float(mask.max()))
+
         binary_mask = (mask > 0.5).astype(np.uint8)
 
     # Отображение результатов
