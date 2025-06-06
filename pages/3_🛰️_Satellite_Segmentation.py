@@ -4,7 +4,7 @@ import requests
 import torch
 from io import BytesIO
 from utils.unet_utils import load_model, preprocess, postprocess_mask, overlay_mask_on_image
-import streamlit as st
+
 # Настройки
 st.set_page_config(page_title="Сегментация спутниковых снимков", page_icon="🛰️")
 st.title("🛰️ Сегментация спутниковых снимков (U-Net)")

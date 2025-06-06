@@ -10,7 +10,7 @@ import streamlit as st
 TARGET_SIZE = (256, 256)
 
 # Кэшированная загрузка модели
-@st.cache_resource
+
 def load_model(weights_path='models/unet_forest.pth'):
     model = UNet(n_class=1)
     model.load_state_dict(torch.load(weights_path, map_location='cpu'))
