@@ -1,74 +1,43 @@
-from models.unet_forest import UNet
-import streamlit as st
 import torch
 import numpy as np
-import requests
 from PIL import Image
-from io import BytesIO
 from torchvision import transforms
+from models.unet_forest import UNet
+import streamlit as st
 
+# Размер входа модели
+TARGET_SIZE = (256, 256)
 
-
+# Кэшированная загрузка модели
 @st.cache_resource
 def load_model(weights_path='models/unet_forest.pth'):
-    model = UNet(1)
+    model = UNet(n_class=1)
     model.load_state_dict(torch.load(weights_path, map_location='cpu'))
     model.eval()
     return model
 
-target_size = (256, 256)
-
+# Предобработка изображения
 def preprocess(img_pil):
     transform = transforms.Compose([
-        transforms.Resize(target_size),
+        transforms.Resize(TARGET_SIZE),
         transforms.ToTensor(),
     ])
-    return transform(img_pil).unsqueeze(0)
+    return transform(img_pil).unsqueeze(0)  # [1, C, H, W]
 
-def overlay_mask_on_image(image_pil, mask_np, alpha=0.5, color=(255, 0, 0)):
-    """Наложение бинарной маски на изображение PIL."""
+# Постобработка маски
+def postprocess_mask(output_tensor, original_size):
+    mask = torch.sigmoid(output_tensor).squeeze().cpu().numpy()
+    binary_mask = (mask > 0.5).astype(np.uint8)
+    binary_mask_resized = Image.fromarray(binary_mask * 255).resize(original_size)
+    return binary_mask, binary_mask_resized
+
+# Наложение маски
+def overlay_mask_on_image(image_pil, mask_np, alpha=0.4, color=(0, 255, 0)):
     image_np = np.array(image_pil).astype(np.uint8)
+    if mask_np.shape != image_np[:2]:
+        mask_np = np.array(Image.fromarray(mask_np.astype(np.uint8) * 255).resize(image_np.shape[:2][::-1]))
+        mask_np = (mask_np > 127).astype(np.uint8)
     mask_rgb = np.zeros_like(image_np)
-    mask_rgb[mask_np == 1] = color  # цвет маски
-
+    mask_rgb[mask_np == 1] = color
     overlay = (image_np * (1 - alpha) + mask_rgb * alpha).astype(np.uint8)
     return Image.fromarray(overlay)
-
-# Интерфейс
-img_pil = None
-st.title("U-Net: Сегментация и наложение маски")
-
-uploaded_file = st.file_uploader("Загрузите изображение", type=["jpg", "png", "jpeg"])
-if uploaded_file:
-    img_pil = Image.open(uploaded_file).convert('RGB')
-
-url = st.text_input("Или введите ссылку на изображение")
-if url and not img_pil:
-    try:
-        response = requests.get(url)
-        img_pil = Image.open(BytesIO(response.content)).convert('RGB')
-    except Exception as e:
-        st.error(f"Ошибка загрузки изображения: {e}")
-
-if img_pil:
-    img_pil = img_pil.resize(target_size)
-    input_tensor = preprocess(img_pil)
-
-    st.image(img_pil, caption="Оригинал", use_container_width=True)
-
-    model = load_model()
-    with torch.no_grad():
-        output = model(input_tensor)
-        mask = torch.sigmoid(output).squeeze().cpu().numpy()
-        binary_mask = (mask > 0.5).astype(np.uint8)
-
-    # Визуализация
-    st.subheader("Результаты сегментации")
-    st.image(mask, caption="Вероятностная маска", use_container_width=True, clamp=True)
-    st.image(binary_mask * 255, caption="Бинарная маска", use_container_width=True)
-
-    # Наложение маски
-    overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(255, 0, 0))
-    st.image(overlay, caption="Изображение с наложенной маской", use_container_width=True)
-else:
-    st.info("Загрузите изображение или вставьте ссылку.")
