@@ -16,7 +16,7 @@ from models.unet_forest import UNet
 
 # Настройки
 target_size = (256, 256)
-weights_path = "models/weights_forest.pth"
+weights_path = "models/unet_forest.pth"
 
 # Функция загрузки модели
 @st.cache_resource

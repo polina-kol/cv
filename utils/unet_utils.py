@@ -54,7 +54,7 @@ if img_pil:
     img_pil = img_pil.resize(target_size)
     input_tensor = preprocess(img_pil)
 
-    st.image(img_pil, caption="Оригинал", use_column_width=True)
+    st.image(img_pil, caption="Оригинал", use_container_width=True)
 
     model = load_model()
     with torch.no_grad():
@@ -64,11 +64,11 @@ if img_pil:
 
     # Визуализация
     st.subheader("Результаты сегментации")
-    st.image(mask, caption="Вероятностная маска", use_column_width=True, clamp=True)
-    st.image(binary_mask * 255, caption="Бинарная маска", use_column_width=True)
+    st.image(mask, caption="Вероятностная маска", use_container_width=True, clamp=True)
+    st.image(binary_mask * 255, caption="Бинарная маска", use_container_width=True)
 
     # Наложение маски
     overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(255, 0, 0))
-    st.image(overlay, caption="Изображение с наложенной маской", use_column_width=True)
+    st.image(overlay, caption="Изображение с наложенной маской", use_container_width=True)
 else:
     st.info("Загрузите изображение или вставьте ссылку.")
