@@ -72,7 +72,7 @@ with tab1:
             img_pil = img_pil.resize(target_size)
             input_tensor = preprocess(img_pil)
 
-            st.image(img_pil, caption="Оригинал", use_column_width=True)
+            st.image(img_pil, caption="Оригинал", use_container_width=True)
 
             model = load_model()
             with torch.no_grad():
