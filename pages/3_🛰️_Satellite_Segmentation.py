@@ -1,6 +1,7 @@
 import streamlit as st
 from PIL import Image
 import requests
+import torch
 from io import BytesIO
 from utils.unet_utils import load_model, preprocess, postprocess_mask, overlay_mask_on_image
 

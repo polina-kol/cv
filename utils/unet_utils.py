@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from PIL import Image
+import torch
 from torchvision import transforms
 from models.unet_forest import UNet
 import streamlit as st
