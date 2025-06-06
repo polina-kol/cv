@@ -57,9 +57,10 @@ with tab1:
                 st.error(f"Ошибка при загрузке изображения: {e}")
 
 with tab2:
-    st.header("YOLOv12 face detector + OpenCV Blur")
+    st.header("YOLO face detector + OpenCV Blur")
+    st.markdown("- Была использована 12 версия YOLO")
     st.markdown("- **Эпох**: 20")
     st.image("assets/conf_face.jpg", caption="Confusion matrix")
-    st.image("assets/pr_face.png", caption="PR-curve")
+    st.image("assets/pr_face.jpg", caption="PR-curve")
     st.image("assets/loss_metrics_face.jpg", caption="Losses and metrics")
 
