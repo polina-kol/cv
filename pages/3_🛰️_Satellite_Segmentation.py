@@ -5,8 +5,9 @@ from io import BytesIO
 import torch
 import numpy as np
 import sys
+import os
 from torchvision import transforms
-# Добавляем корень проекта в Python path
+
 sys.path.append(os.path.abspath("../"))
 
 # Теперь можно импортировать модели
