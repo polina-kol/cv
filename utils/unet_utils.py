@@ -5,7 +5,7 @@ from PIL import Image
 
 from models.unet_forest import UNet  # Импортируем твою модель, если она в другом файле
 
-def load_model(path="models/unet_forest.pth"):
+def load_model(path="../models/unet_forest.pth"):
     model = UNet(n_class=1)
     model.load_state_dict(torch.load(path, map_location="cpu"))
     model.eval()
