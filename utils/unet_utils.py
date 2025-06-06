@@ -16,9 +16,15 @@ def preprocess(img_pil):
     return transform(img_pil).unsqueeze(0)
 
 def overlay_mask_on_image(image_pil, mask_np, alpha=0.5, color=(255, 0, 0)):
+    """Наложение бинарной маски на изображение PIL."""
     image_np = np.array(image_pil).astype(np.uint8)
+
+    # Приведение размера маски к размеру изображения
+    mask_resized = Image.fromarray((mask_np * 255).astype(np.uint8)).resize(image_pil.size)
+    mask_bin = np.array(mask_resized) > 127
+
     mask_rgb = np.zeros_like(image_np)
-    mask_rgb[mask_np == 1] = color
+    mask_rgb[mask_bin] = color  # цвет маски
 
     overlay = (image_np * (1 - alpha) + mask_rgb * alpha).astype(np.uint8)
     return Image.fromarray(overlay)

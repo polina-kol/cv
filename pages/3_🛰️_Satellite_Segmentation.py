@@ -23,7 +23,7 @@ if url and not img_pil:
         st.error(f"Ошибка загрузки изображения: {e}")
 
 if img_pil:
-    st.image(img_pil, caption="Оригинал", use_column_width=True)
+    st.image(img_pil, caption="Оригинал",  use_container_width=True)
 
     input_tensor = preprocess(img_pil)
     model = load_model()
@@ -34,10 +34,10 @@ if img_pil:
         binary_mask = (mask > 0.5).astype(np.uint8)
 
     st.subheader("Результаты сегментации")
-    st.image(mask, caption="Вероятностная маска", use_column_width=True, clamp=True)
-    st.image(binary_mask * 255, caption="Бинарная маска", use_column_width=True)
+    st.image(mask, caption="Вероятностная маска",  use_container_width=True, clamp=True)
+    st.image(binary_mask * 255, caption="Бинарная маска",  use_container_width=True)
 
     overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4)
-    st.image(overlay, caption="Маска на изображении", use_column_width=True)
+    st.image(overlay, caption="Маска на изображении",  use_container_width=True)
 else:
     st.info("Загрузите изображение или вставьте ссылку.")
