@@ -9,11 +9,13 @@ from models.unet_forest import UNet
 target_size = (256, 256)
 
 def preprocess(img_pil, target_size=(256, 256)):
+    img_pil = img_pil.convert("RGB")  # ← ОБЯЗАТЕЛЬНО
     transform = transforms.Compose([
         transforms.Resize(target_size),
         transforms.ToTensor(),
     ])
     return transform(img_pil).unsqueeze(0)
+
 
 def overlay_mask_on_image(image_pil, mask_np, alpha=0.5, color=(255, 0, 0)):
     """Наложение бинарной маски на изображение PIL."""
