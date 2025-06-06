@@ -4,9 +4,9 @@ import requests
 from io import BytesIO
 import torch
 import numpy as np
+from torchvision import transforms
 import sys
 import os
-from torchvision import transforms
 
 sys.path.append(os.path.abspath("../"))
 

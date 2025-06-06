@@ -7,6 +7,8 @@ from PIL import Image
 from io import BytesIO
 from torchvision import transforms
 
+
+
 @st.cache_resource
 def load_model(weights_path='models/unet_forest.pth'):
     model = UNet(1)
