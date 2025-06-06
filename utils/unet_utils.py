@@ -8,7 +8,7 @@ from io import BytesIO
 from torchvision import transforms
 
 @st.cache_resource
-def load_model(weights_path='../models/unet_forest.pth'):
+def load_model(weights_path='models/unet_forest.pth'):
     model = UNet(1)
     model.load_state_dict(torch.load(weights_path, map_location='cpu'))
     model.eval()

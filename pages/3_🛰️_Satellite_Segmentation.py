@@ -7,7 +7,7 @@ import numpy as np
 from torchvision import transforms
 
 # Импортируем модель
-from model.unet_forest import UNet
+from models.unet_forest import UNet
 
 # Настройки
 target_size = (256, 256)
