@@ -1,37 +1,34 @@
 import torch
-import torchvision.transforms as T
 import numpy as np
 from PIL import Image
+from torchvision import transforms
+import os
 
-from models.unet_forest import UNet  # Импортируем твою модель, если она в другом файле
+from models.unet_forest import UNet
 
-def load_model(path="../models/unet_forest.pth"):
-    model = UNet(n_class=1)
-    model.load_state_dict(torch.load(path, map_location="cpu"))
+target_size = (256, 256)
+
+def preprocess(img_pil):
+    transform = transforms.Compose([
+        transforms.Resize(target_size),
+        transforms.ToTensor(),
+    ])
+    return transform(img_pil).unsqueeze(0)
+
+def overlay_mask_on_image(image_pil, mask_np, alpha=0.5, color=(255, 0, 0)):
+    image_np = np.array(image_pil).astype(np.uint8)
+    mask_rgb = np.zeros_like(image_np)
+    mask_rgb[mask_np == 1] = color
+
+    overlay = (image_np * (1 - alpha) + mask_rgb * alpha).astype(np.uint8)
+    return Image.fromarray(overlay)
+
+def load_model(weights_path=None):
+    if weights_path is None:
+        # Автоматически определяет путь до весов
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        weights_path = os.path.join(current_dir, "..", "models", "unet_forest.pth")
+    model = UNet(1)
+    model.load_state_dict(torch.load(weights_path, map_location='cpu'))
     model.eval()
     return model
-
-def preprocess(image_pil):
-    transform = T.Compose([
-        T.Resize((256, 256)),
-        T.ToTensor(),
-    ])
-    return transform(image_pil).unsqueeze(0)
-
-def postprocess_mask(output_tensor, orig_size):
-    pred = output_tensor.squeeze().detach().cpu().numpy()
-    mask = (pred > 0.5).astype(np.uint8) * 255
-    mask_img = Image.fromarray(mask).resize(orig_size)
-    return mask, mask_img
-
-def overlay_mask_on_image(image, mask_array, alpha=0.4, color=(0, 255, 0)):
-    image_np = np.array(image).copy()
-    mask_resized = Image.fromarray(mask_array).resize(image.size)
-    mask_bin = np.array(mask_resized) > 0
-
-    overlay = image_np.copy()
-    overlay[mask_bin] = (
-        overlay[mask_bin] * (1 - alpha) + np.array(color) * alpha
-    ).astype(np.uint8)
-
-    return Image.fromarray(overlay)
