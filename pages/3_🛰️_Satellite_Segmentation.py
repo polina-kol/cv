@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from io import BytesIO
 
-from utils.unet_utils import load_model, preprocess, overlay_mask_on_image
+from utils.unet_utils import load_model, preprocess, overlay_mask_on_image, target_size
 
 st.title("🛰️ Сегментация изображения (U-Net)")
 
@@ -23,21 +23,28 @@ if url and not img_pil:
         st.error(f"Ошибка загрузки изображения: {e}")
 
 if img_pil:
-    st.image(img_pil, caption="Оригинал",  use_container_width=True)
+    original_size = img_pil.size  # Сохраняем оригинальный размер изображения
 
+    # Предобработка изображения для модели
     input_tensor = preprocess(img_pil)
-    model = load_model()
 
+    # Отображение оригинального изображения
+    st.image(img_pil, caption="Оригинал", use_container_width=True)
+
+    # Загрузка и применение модели
+    model = load_model()
     with torch.no_grad():
         output = model(input_tensor)
         mask = torch.sigmoid(output).squeeze().cpu().numpy()
         binary_mask = (mask > 0.5).astype(np.uint8)
 
+    # Отображение результатов
     st.subheader("Результаты сегментации")
-    st.image(mask, caption="Вероятностная маска",  use_container_width=True, clamp=True)
-    st.image(binary_mask * 255, caption="Бинарная маска",  use_container_width=True)
+    st.image(mask, caption="Вероятностная маска", use_container_width=True, clamp=True)
+    st.image(binary_mask * 255, caption="Бинарная маска", use_container_width=True)
 
-    overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4)
-    st.image(overlay, caption="Маска на изображении",  use_container_width=True)
+    # Наложение маски на оригинал
+    overlay = overlay_mask_on_image(img_pil, binary_mask, alpha=0.4, color=(255, 0, 0))
+    st.image(overlay, caption="Изображение с наложенной маской", use_container_width=True)
 else:
     st.info("Загрузите изображение или вставьте ссылку.")
